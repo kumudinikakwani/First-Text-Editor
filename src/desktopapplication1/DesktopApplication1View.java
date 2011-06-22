@@ -1000,5 +1000,6 @@ public class DesktopApplication1View extends FrameView {
         Container b = (Container) c.getComponent(0);
         JTextArea texta = (JTextArea) b.getComponent(0);
         texta.setFont(font);
+        System.out.println("hi");
     }
 }
