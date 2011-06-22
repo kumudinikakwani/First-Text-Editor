@@ -1,0 +1,1004 @@
+/*
+ * DesktopApplication1View.java
+ */
+package desktopapplication1;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FileDialog;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
+import java.awt.Shape;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import org.jdesktop.application.Action;
+import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.FrameView;
+import org.jdesktop.application.TaskMonitor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import javax.swing.Timer;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
+
+/**
+ * The application's main frame.
+ */
+public class DesktopApplication1View extends FrameView {
+
+    private String str = "";
+    private Font font;
+
+    public DesktopApplication1View(SingleFrameApplication app) {
+        super(app);
+
+        initComponents();
+
+
+        // status bar initialization - message timeout, idle icon and busy animation, etc
+        ResourceMap resourceMap = getResourceMap();
+        int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
+        messageTimer = new Timer(messageTimeout, new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                statusMessageLabel.setText("");
+            }
+        });
+        messageTimer.setRepeats(false);
+        int busyAnimationRate = resourceMap.getInteger("StatusBar.busyAnimationRate");
+        for (int i = 0; i < busyIcons.length; i++) {
+            busyIcons[i] = resourceMap.getIcon("StatusBar.busyIcons[" + i + "]");
+        }
+        busyIconTimer = new Timer(busyAnimationRate, new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                busyIconIndex = (busyIconIndex + 1) % busyIcons.length;
+                statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
+            }
+        });
+        idleIcon = resourceMap.getIcon("StatusBar.idleIcon");
+        statusAnimationLabel.setIcon(idleIcon);
+        progressBar.setVisible(false);
+
+        // connecting action tasks to status bar via TaskMonitor
+        TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
+        taskMonitor.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                if ("started".equals(propertyName)) {
+                    if (!busyIconTimer.isRunning()) {
+                        statusAnimationLabel.setIcon(busyIcons[0]);
+                        busyIconIndex = 0;
+                        busyIconTimer.start();
+                    }
+                    progressBar.setVisible(true);
+                    progressBar.setIndeterminate(true);
+                } else if ("done".equals(propertyName)) {
+                    busyIconTimer.stop();
+                    statusAnimationLabel.setIcon(idleIcon);
+                    progressBar.setVisible(false);
+                    progressBar.setValue(0);
+                } else if ("message".equals(propertyName)) {
+                    String text = (String) (evt.getNewValue());
+                    statusMessageLabel.setText((text == null) ? "" : text);
+                    messageTimer.restart();
+                } else if ("progress".equals(propertyName)) {
+                    int value = (Integer) (evt.getNewValue());
+                    progressBar.setVisible(true);
+                    progressBar.setIndeterminate(false);
+                    progressBar.setValue(value);
+                }
+            }
+        });
+        a();
+    }
+
+    @Action
+    public void showAboutBox() {
+        if (aboutBox == null) {
+            JFrame mainFrame = DesktopApplication1.getApplication().getMainFrame();
+            aboutBox = new DesktopApplication1AboutBox(mainFrame);
+            aboutBox.setLocationRelativeTo(mainFrame);
+        }
+        DesktopApplication1.getApplication().show(aboutBox);
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        mainPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        newButton = new javax.swing.JButton();
+        openButton = new javax.swing.JButton();
+        saveButton = new javax.swing.JButton();
+        jComboBox = new javax.swing.JComboBox();
+        fontComboBox = new javax.swing.JComboBox();
+        jToggleButtonBold = new javax.swing.JToggleButton();
+        jToggleButton2 = new javax.swing.JToggleButton();
+        jButton1 = new javax.swing.JButton();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        menuBar = new javax.swing.JMenuBar();
+        javax.swing.JMenu fileMenu = new javax.swing.JMenu();
+        openMenuItem = new javax.swing.JMenuItem();
+        saveMenuItem = new javax.swing.JMenuItem();
+        javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
+        editMenu = new javax.swing.JMenu();
+        cutMenuItem = new javax.swing.JMenuItem();
+        copyMenuItem = new javax.swing.JMenuItem();
+        pasteMenuItem = new javax.swing.JMenuItem();
+        optMenu = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        javax.swing.JMenu helpMenu = new javax.swing.JMenu();
+        javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
+        statusPanel = new javax.swing.JPanel();
+        javax.swing.JSeparator statusPanelSeparator = new javax.swing.JSeparator();
+        statusMessageLabel = new javax.swing.JLabel();
+        statusAnimationLabel = new javax.swing.JLabel();
+        progressBar = new javax.swing.JProgressBar();
+        popupMenu1 = new java.awt.PopupMenu();
+        jColorChooser1 = new javax.swing.JColorChooser();
+        jFrame1 = new javax.swing.JFrame();
+
+        mainPanel.setName("mainPanel"); // NOI18N
+
+        jPanel1.setName("jPanel1"); // NOI18N
+
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(desktopapplication1.DesktopApplication1.class).getContext().getResourceMap(DesktopApplication1View.class);
+        newButton.setIcon(resourceMap.getIcon("newButton.icon")); // NOI18N
+        newButton.setText(resourceMap.getString("newButton.text")); // NOI18N
+        newButton.setName("newButton"); // NOI18N
+        newButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newButtonActionPerformed(evt);
+            }
+        });
+
+        openButton.setIcon(resourceMap.getIcon("openButton.icon")); // NOI18N
+        openButton.setText(resourceMap.getString("openButton.text")); // NOI18N
+        openButton.setName("openButton"); // NOI18N
+        openButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openButtonActionPerformed(evt);
+            }
+        });
+
+        saveButton.setIcon(resourceMap.getIcon("saveButton.icon")); // NOI18N
+        saveButton.setText(resourceMap.getString("saveButton.text")); // NOI18N
+        saveButton.setName("saveButton"); // NOI18N
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
+
+        jComboBox.setName("jComboBox"); // NOI18N
+        jComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBoxActionPerformed(evt);
+            }
+        });
+
+        fontComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "24" }));
+        fontComboBox.setName("fontComboBox"); // NOI18N
+        fontComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fontComboBoxActionPerformed(evt);
+            }
+        });
+
+        jToggleButtonBold.setFont(resourceMap.getFont("jToggleButtonBold.font")); // NOI18N
+        jToggleButtonBold.setForeground(resourceMap.getColor("jToggleButtonBold.foreground")); // NOI18N
+        jToggleButtonBold.setText(resourceMap.getString("jToggleButtonBold.text")); // NOI18N
+        jToggleButtonBold.setName("jToggleButtonBold"); // NOI18N
+        jToggleButtonBold.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButtonBoldActionPerformed(evt);
+            }
+        });
+
+        jToggleButton2.setFont(resourceMap.getFont("jToggleButton2.font")); // NOI18N
+        jToggleButton2.setText(resourceMap.getString("jToggleButton2.text")); // NOI18N
+        jToggleButton2.setName("jToggleButton2"); // NOI18N
+        jToggleButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton1.setIcon(resourceMap.getIcon("jButton1.icon")); // NOI18N
+        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
+        jButton1.setName("jButton1"); // NOI18N
+        jButton1.setPreferredSize(new java.awt.Dimension(57, 33));
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(openButton, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 122, Short.MAX_VALUE)
+                .addComponent(jComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(fontComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jToggleButtonBold)
+                .addGap(24, 24, 24)
+                .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(52, 52, 52))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(newButton, javax.swing.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE)
+                        .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jToggleButton2)
+                        .addComponent(jToggleButtonBold)
+                        .addComponent(fontComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(openButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE)))
+        );
+
+        jTabbedPane1.setName("jTabbedPane1"); // NOI18N
+
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE))
+        );
+
+        menuBar.setName("menuBar"); // NOI18N
+
+        fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
+        fileMenu.setName("fileMenu"); // NOI18N
+        fileMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileMenuActionPerformed(evt);
+            }
+        });
+
+        openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openMenuItem.setText(resourceMap.getString("openMenuItem.text")); // NOI18N
+        openMenuItem.setName("openMenuItem"); // NOI18N
+        openMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(openMenuItem);
+
+        saveMenuItem.setText(resourceMap.getString("saveMenuItem.text")); // NOI18N
+        saveMenuItem.setActionCommand(resourceMap.getString("saveMenuItem.actionCommand")); // NOI18N
+        saveMenuItem.setName("saveMenuItem"); // NOI18N
+        saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveMenuItem);
+
+        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(desktopapplication1.DesktopApplication1.class).getContext().getActionMap(DesktopApplication1View.class, this);
+        exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
+        exitMenuItem.setName("exitMenuItem"); // NOI18N
+        fileMenu.add(exitMenuItem);
+
+        menuBar.add(fileMenu);
+
+        editMenu.setText(resourceMap.getString("editMenu.text")); // NOI18N
+        editMenu.setName("editMenu"); // NOI18N
+
+        cutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
+        cutMenuItem.setText(resourceMap.getString("cutMenuItem.text")); // NOI18N
+        cutMenuItem.setName("cutMenuItem"); // NOI18N
+        cutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cutMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(cutMenuItem);
+
+        copyMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
+        copyMenuItem.setText(resourceMap.getString("copyMenuItem.text")); // NOI18N
+        copyMenuItem.setName("copyMenuItem"); // NOI18N
+        copyMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(copyMenuItem);
+
+        pasteMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.CTRL_MASK));
+        pasteMenuItem.setText(resourceMap.getString("pasteMenuItem.text")); // NOI18N
+        pasteMenuItem.setName("pasteMenuItem"); // NOI18N
+        pasteMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pasteMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(pasteMenuItem);
+
+        menuBar.add(editMenu);
+
+        optMenu.setText(resourceMap.getString("optMenu.text")); // NOI18N
+        optMenu.setName("optMenu"); // NOI18N
+
+        jMenuItem1.setText(resourceMap.getString("jMenuItem1.text")); // NOI18N
+        jMenuItem1.setName("jMenuItem1"); // NOI18N
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        optMenu.add(jMenuItem1);
+
+        jMenuItem3.setText(resourceMap.getString("jMenuItem3.text")); // NOI18N
+        jMenuItem3.setName("jMenuItem3"); // NOI18N
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        optMenu.add(jMenuItem3);
+
+        menuBar.add(optMenu);
+
+        helpMenu.setText(resourceMap.getString("helpMenu.text")); // NOI18N
+        helpMenu.setName("helpMenu"); // NOI18N
+
+        aboutMenuItem.setAction(actionMap.get("showAboutBox")); // NOI18N
+        aboutMenuItem.setName("aboutMenuItem"); // NOI18N
+        helpMenu.add(aboutMenuItem);
+
+        menuBar.add(helpMenu);
+
+        statusPanel.setName("statusPanel"); // NOI18N
+
+        statusPanelSeparator.setName("statusPanelSeparator"); // NOI18N
+
+        statusMessageLabel.setName("statusMessageLabel"); // NOI18N
+
+        statusAnimationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        statusAnimationLabel.setName("statusAnimationLabel"); // NOI18N
+
+        progressBar.setName("progressBar"); // NOI18N
+
+        javax.swing.GroupLayout statusPanelLayout = new javax.swing.GroupLayout(statusPanel);
+        statusPanel.setLayout(statusPanelLayout);
+        statusPanelLayout.setHorizontalGroup(
+            statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
+            .addGroup(statusPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(statusMessageLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 475, Short.MAX_VALUE)
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(statusAnimationLabel)
+                .addContainerGap())
+        );
+        statusPanelLayout.setVerticalGroup(
+            statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(statusPanelLayout.createSequentialGroup()
+                .addComponent(statusPanelSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(statusMessageLabel)
+                    .addComponent(statusAnimationLabel)
+                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(3, 3, 3))
+        );
+
+        popupMenu1.setLabel(resourceMap.getString("popupMenu1.label")); // NOI18N
+
+        jColorChooser1.setName("jColorChooser1"); // NOI18N
+
+        jFrame1.setName("jFrame1"); // NOI18N
+
+        javax.swing.GroupLayout jFrame1Layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
+        jFrame1.getContentPane().setLayout(jFrame1Layout);
+        jFrame1Layout.setHorizontalGroup(
+            jFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jFrame1Layout.setVerticalGroup(
+            jFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
+        setComponent(mainPanel);
+        setMenuBar(menuBar);
+        setStatusBar(statusPanel);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
+        // TODO add your handling code here:
+        jpanel = new JPanel();
+        JTextArea text = new JTextArea();
+        text.addKeyListener(new KeyListener() {
+
+            public void keyPressed(KeyEvent e) {
+                saved.add(jTabbedPane1.getSelectedIndex(), "false");
+
+
+            }
+
+            public void keyReleased(KeyEvent e) {
+            }
+
+            public void keyTyped(KeyEvent e) {
+            }
+
+            public void information(String event, KeyEvent e) {
+            }
+        });
+        scroller = new JScrollPane(text);
+        jTabbedPane1.addTab("Untitled Document", scroller);
+        jTabbedPane1.setSelectedComponent(scroller);
+        savedonce.add(jTabbedPane1.getSelectedIndex(), "false");
+        saved.add(jTabbedPane1.getSelectedIndex(), "false");
+        filepaths.add(jTabbedPane1.getSelectedIndex(), null);
+
+    }//GEN-LAST:event_newButtonActionPerformed
+
+    private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
+        // TODO add your handling code here:
+        String str4, str1, str2, str3;
+        char str5;
+        str4 = " ";
+        FileDialog dialog = new FileDialog(new JFrame(), "open");
+        dialog.setVisible(true);
+
+        str1 = dialog.getDirectory();
+        str2 = dialog.getFile();
+        str3 = str1 + str2;
+        if (str2 != null) {
+            File f = new File(str3);
+            FileInputStream fobj = null;
+            try {
+                fobj = new FileInputStream(f);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(DesktopApplication1View.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            int len = (int) f.length();
+
+            for (int j = 0; j < len; j++) {
+                try {
+                    str5 = (char) fobj.read();
+                    str4 = str4 + str5;
+                } catch (IOException ex) {
+                    Logger.getLogger(DesktopApplication1View.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+
+            }
+
+            JTextArea text = new JTextArea();
+            text.addKeyListener(new KeyListener() {
+
+                public void keyPressed(KeyEvent e) {
+                    saved.add(jTabbedPane1.getSelectedIndex(), "false");
+
+                }
+
+                public void keyReleased(KeyEvent e) {
+                }
+
+                public void keyTyped(KeyEvent e) {
+                }
+
+                public void information(String event, KeyEvent e) {
+                }
+            });
+            scroller = new JScrollPane(text);
+            jTabbedPane1.addTab(f.getName(), scroller);
+            jTabbedPane1.setSelectedComponent(scroller);
+            text.setText(str4);
+            savedonce.add(jTabbedPane1.getSelectedIndex(), "true");
+            saved.add(jTabbedPane1.getSelectedIndex(), "true");
+            filepaths.add(jTabbedPane1.getSelectedIndex(), str3);
+            readFonts();
+        }
+    }//GEN-LAST:event_openButtonActionPerformed
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+
+        Container c = (Container) jTabbedPane1.getSelectedComponent();
+        Container b = (Container) c.getComponent(0);
+        JTextArea texta = (JTextArea) b.getComponent(0);
+        String string = texta.getText();
+        String str7, str8, str9;
+        int len1 = 0;
+        byte[] buf;
+        if (savedonce.get(jTabbedPane1.getSelectedIndex()) == "false") {
+            FileDialog dialog1 = new FileDialog(new JFrame(), "Save As", FileDialog.SAVE);
+            dialog1.setVisible(true);
+
+            str7 = dialog1.getDirectory();
+            str8 = dialog1.getFile();
+            str9 = str7 + str8;
+            len1 = string.length();
+            buf = string.getBytes();
+            if (str8 != null) {
+                try {
+                    File f1 = new File(str9);
+                    FileOutputStream fobj1 = new FileOutputStream(f1);
+                    for (int k = 0; k < len1; k++) {
+                        fobj1.write(buf[k]);
+                    }
+                    fobj1.close();
+                    jTabbedPane1.setTitleAt(jTabbedPane1.getSelectedIndex(), str8);
+                    savedonce.set(jTabbedPane1.getSelectedIndex(), "true");
+                    saved.set(jTabbedPane1.getSelectedIndex(), "true");
+                    filepaths.add(jTabbedPane1.getSelectedIndex(), str9);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+
+            str9 = (String) filepaths.get(jTabbedPane1.getSelectedIndex());
+            buf = string.getBytes();
+            len1 = buf.length;
+            try {
+                File f1 = new File(str9);
+                FileOutputStream fobj1 = new FileOutputStream(f1);
+                for (int k = 0; k < len1; k++) {
+                    fobj1.write(buf[k]);
+                }
+                fobj1.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }//GEN-LAST:event_saveButtonActionPerformed
+
+    private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
+        // TODO add your handling code here:
+        String str4, str1, str2, str3;
+        char str5;
+        str4 = " ";
+        FileDialog dialog = new FileDialog(new JFrame(), "open");
+        dialog.setVisible(true);
+
+        str1 = dialog.getDirectory();
+        str2 = dialog.getFile();
+        str3 = str1 + str2;
+        if (str2 != null) {
+            File f = new File(str3);
+            FileInputStream fobj = null;
+            try {
+                fobj = new FileInputStream(f);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(DesktopApplication1View.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            int len = (int) f.length();
+
+            for (int j = 0; j < len; j++) {
+                try {
+                    str5 = (char) fobj.read();
+                    str4 = str4 + str5;
+                } catch (IOException ex) {
+                    Logger.getLogger(DesktopApplication1View.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+
+            }
+
+            JTextArea text = new JTextArea();
+            text.addKeyListener(new KeyListener() {
+
+                public void keyPressed(KeyEvent e) {
+                    saved.add(jTabbedPane1.getSelectedIndex(), "false");
+
+                }
+
+                public void keyReleased(KeyEvent e) {
+                }
+
+                public void keyTyped(KeyEvent e) {
+                }
+
+                public void information(String event, KeyEvent e) {
+                }
+            });
+            scroller = new JScrollPane(text);
+            jTabbedPane1.addTab(f.getName(), scroller);
+            jTabbedPane1.setSelectedComponent(scroller);
+            text.setText(str4);
+            savedonce.add(jTabbedPane1.getSelectedIndex(), "true");
+            saved.add(jTabbedPane1.getSelectedIndex(), "true");
+            filepaths.add(jTabbedPane1.getSelectedIndex(), str3);
+            readFonts();
+        }
+    }//GEN-LAST:event_openMenuItemActionPerformed
+
+    private void cutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cutMenuItemActionPerformed
+        // TODO add your handling code here:
+        Container c = (Container) jTabbedPane1.getSelectedComponent();
+        Container b = (Container) c.getComponent(0);
+        JTextArea text = (JTextArea) b.getComponent(0);
+
+        str = text.getSelectedText();
+        int i = text.getText().indexOf(str);
+        text.replaceRange(" ", i, i + str.length());
+    }//GEN-LAST:event_cutMenuItemActionPerformed
+
+    private void copyMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyMenuItemActionPerformed
+        // TODO add your handling code here:
+        Container c = (Container) jTabbedPane1.getSelectedComponent();
+        Container b = (Container) c.getComponent(0);
+        JTextArea text = (JTextArea) b.getComponent(0);
+        str = text.getSelectedText();
+
+    }//GEN-LAST:event_copyMenuItemActionPerformed
+
+    private void pasteMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pasteMenuItemActionPerformed
+        // TODO add your handling code here:
+        Container c = (Container) jTabbedPane1.getSelectedComponent();
+        Container b = (Container) c.getComponent(0);
+        JTextArea text = (JTextArea) b.getComponent(0);
+        int pos1 = text.getCaretPosition();
+        text.insert(str, pos1);
+    }//GEN-LAST:event_pasteMenuItemActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TOD add your handling code here:
+        if (saved.get(jTabbedPane1.getSelectedIndex()) == "false") {
+            NotSaved dial = new NotSaved(new java.awt.Frame(), true);
+            dial.setVisible(true);
+            int status = dial.getReturnStatus();
+            if (status == 1) {
+                savedonce.remove(jTabbedPane1.getSelectedIndex());
+                saved.remove(jTabbedPane1.getSelectedIndex());
+                filepaths.remove(jTabbedPane1.getSelectedIndex());
+                jTabbedPane1.removeTabAt(jTabbedPane1.getSelectedIndex());
+            }
+        } else {
+            savedonce.remove(jTabbedPane1.getSelectedIndex());
+            saved.remove(jTabbedPane1.getSelectedIndex());
+            filepaths.remove(jTabbedPane1.getSelectedIndex());
+            jTabbedPane1.removeTabAt(jTabbedPane1.getSelectedIndex());
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        // TODO add your handling code here:
+        String pattern = JOptionPane.showInputDialog("Enter Word to Find");
+        Container c = (Container) jTabbedPane1.getSelectedComponent();
+        Container b = (Container) c.getComponent(0);
+        JTextArea text = (JTextArea) b.getComponent(0);
+        String str = text.getText();
+        System.out.println("\n" + pattern + "\n" + str);
+        int i, j;
+        int m = pattern.length();
+        int n = str.length();
+
+        Highlighter ht = text.getHighlighter();
+        Highlighter.Highlight[] hilites = ht.getHighlights();
+
+        for (int k = 0; k < hilites.length; k++) {
+            if (hilites[k].getPainter() instanceof MyHighlightPainter) {
+                ht.removeHighlight(hilites[k]);
+            }
+        }
+        for (i = 0; i < n; i++) {
+            for (j = 0; j < m; j++) {
+                if (pattern.charAt(j) != str.charAt(i + j)) {
+                    break;
+                }
+                if (j == (m - 1)) {
+                    try {
+                        ht.addHighlight(i, i + m, textpainter);
+                    } catch (BadLocationException ex) {
+                        Logger.getLogger(DesktopApplication1View.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void jToggleButtonBoldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButtonBoldActionPerformed
+        // TODO add your handling code here:
+        readFonts();
+
+
+    }//GEN-LAST:event_jToggleButtonBoldActionPerformed
+
+    private void jToggleButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton2ActionPerformed
+        // TODO add your handling code here:
+         readFonts();
+    }//GEN-LAST:event_jToggleButton2ActionPerformed
+
+    private void fileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileMenuActionPerformed
+        // TODO add your handling code here:
+        Container c = (Container) jTabbedPane1.getSelectedComponent();
+        Container b = (Container) c.getComponent(0);
+        JTextArea texta = (JTextArea) b.getComponent(0);
+        String string = texta.getText();
+        String str7, str8, str9;
+        int len1 = 0;
+        byte[] buf;
+        if (savedonce.get(jTabbedPane1.getSelectedIndex()) == "false") {
+            FileDialog dialog1 = new FileDialog(new JFrame(), "Save As", FileDialog.SAVE);
+            dialog1.setVisible(true);
+
+            str7 = dialog1.getDirectory();
+            str8 = dialog1.getFile();
+            str9 = str7 + str8;
+            len1 = string.length();
+            buf = string.getBytes();
+            if (str8 != null) {
+                try {
+                    File f1 = new File(str9);
+                    FileOutputStream fobj1 = new FileOutputStream(f1);
+                    for (int k = 0; k < len1; k++) {
+                        fobj1.write(buf[k]);
+                    }
+                    fobj1.close();
+                    jTabbedPane1.setTitleAt(jTabbedPane1.getSelectedIndex(), str8);
+                    savedonce.set(jTabbedPane1.getSelectedIndex(), "true");
+                    saved.set(jTabbedPane1.getSelectedIndex(), "true");
+                    filepaths.add(jTabbedPane1.getSelectedIndex(), str9);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+
+            str9 = (String) filepaths.get(jTabbedPane1.getSelectedIndex());
+            buf = string.getBytes();
+            len1 = buf.length;
+            try {
+                File f1 = new File(str9);
+                FileOutputStream fobj1 = new FileOutputStream(f1);
+                for (int k = 0; k < len1; k++) {
+                    fobj1.write(buf[k]);
+                }
+                fobj1.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }//GEN-LAST:event_fileMenuActionPerformed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        // TODO add your handling code here:
+        ColorWindow colorwindo = new ColorWindow(new java.awt.Frame(), true);
+        colorwindo.setVisible(true);
+        if (colorwindo.getReturnStatus() == 1) {
+            Container c = (Container) jTabbedPane1.getSelectedComponent();
+            Container b = (Container) c.getComponent(0);
+            JTextArea text = (JTextArea) b.getComponent(0);
+            text.setForeground(colorwindo.getColour());
+        }
+
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
+        // TODO add your handling code here:
+        Container c = (Container) jTabbedPane1.getSelectedComponent();
+        Container b = (Container) c.getComponent(0);
+        JTextArea texta = (JTextArea) b.getComponent(0);
+        String string = texta.getText();
+        String str7, str8, str9;
+        int len1 = 0;
+        byte[] buf;
+        if (savedonce.get(jTabbedPane1.getSelectedIndex()) == "false") {
+            FileDialog dialog1 = new FileDialog(new JFrame(), "Save As", FileDialog.SAVE);
+            dialog1.setVisible(true);
+
+            str7 = dialog1.getDirectory();
+            str8 = dialog1.getFile();
+            str9 = str7 + str8;
+            len1 = string.length();
+            buf = string.getBytes();
+            if (str8 != null) {
+                try {
+                    File f1 = new File(str9);
+                    FileOutputStream fobj1 = new FileOutputStream(f1);
+                    for (int k = 0; k < len1; k++) {
+                        fobj1.write(buf[k]);
+                    }
+                    fobj1.close();
+                    jTabbedPane1.setTitleAt(jTabbedPane1.getSelectedIndex(), str8);
+                    savedonce.set(jTabbedPane1.getSelectedIndex(), "true");
+                    saved.set(jTabbedPane1.getSelectedIndex(), "true");
+                    filepaths.add(jTabbedPane1.getSelectedIndex(), str9);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+
+            str9 = (String) filepaths.get(jTabbedPane1.getSelectedIndex());
+            buf = string.getBytes();
+            len1 = buf.length;
+            try {
+                File f1 = new File(str9);
+                FileOutputStream fobj1 = new FileOutputStream(f1);
+                for (int k = 0; k < len1; k++) {
+                    fobj1.write(buf[k]);
+                }
+                fobj1.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }//GEN-LAST:event_saveMenuItemActionPerformed
+
+    private void fontComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontComboBoxActionPerformed
+        // TODO add your handling code here:
+        readFonts();
+    }//GEN-LAST:event_fontComboBoxActionPerformed
+
+    private void jComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxActionPerformed
+        // TODO add your handling code here:
+         readFonts();
+    }//GEN-LAST:event_jComboBoxActionPerformed
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem copyMenuItem;
+    private javax.swing.JMenuItem cutMenuItem;
+    private javax.swing.JMenu editMenu;
+    private javax.swing.JComboBox fontComboBox;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JColorChooser jColorChooser1;
+    private javax.swing.JComboBox jComboBox;
+    private javax.swing.JFrame jFrame1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JToggleButton jToggleButton2;
+    private javax.swing.JToggleButton jToggleButtonBold;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JMenuBar menuBar;
+    private javax.swing.JButton newButton;
+    private javax.swing.JButton openButton;
+    private javax.swing.JMenuItem openMenuItem;
+    private javax.swing.JMenu optMenu;
+    private javax.swing.JMenuItem pasteMenuItem;
+    private java.awt.PopupMenu popupMenu1;
+    private javax.swing.JProgressBar progressBar;
+    private javax.swing.JButton saveButton;
+    private javax.swing.JMenuItem saveMenuItem;
+    private javax.swing.JLabel statusAnimationLabel;
+    private javax.swing.JLabel statusMessageLabel;
+    private javax.swing.JPanel statusPanel;
+    // End of variables declaration//GEN-END:variables
+    private final Timer messageTimer;
+    private final Timer busyIconTimer;
+    private final Icon idleIcon;
+    private final Icon[] busyIcons = new Icon[15];
+    private int busyIconIndex = 0;
+    private Highlighter.HighlightPainter textpainter = new MyHighlightPainter(Color.yellow);
+    JPanel jpanel;
+    JScrollPane scroller;
+    private JDialog aboutBox;
+    ArrayList savedonce = new ArrayList();
+    ArrayList saved = new ArrayList();
+    ArrayList filepaths = new ArrayList();
+
+    class MyHighlightPainter extends DefaultHighlighter.DefaultHighlightPainter {
+
+        public MyHighlightPainter(Color color) {
+            super(color);
+        }
+    }
+
+    void a() {
+        JTextArea text = new JTextArea();
+        scroller = new JScrollPane(text);
+        jTabbedPane1.addTab("Untitled Document", scroller);
+        text.addKeyListener(new KeyListener() {
+
+            public void keyPressed(KeyEvent e) {
+                saved.add(jTabbedPane1.getSelectedIndex(), "false");
+
+            }
+
+            public void keyReleased(KeyEvent e) {
+            }
+
+            public void keyTyped(KeyEvent e) {
+            }
+
+            public void information(String event, KeyEvent e) {
+            }
+        });
+        String[] fontNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+        for (String fontName : fontNames)
+        jComboBox.addItem(fontName);
+        jComboBox.setSelectedItem("Times New Roman");
+        fontComboBox.setSelectedItem("18");
+        savedonce.add(jTabbedPane1.getSelectedIndex(), "false");
+        saved.add(jTabbedPane1.getSelectedIndex(), "false");
+        filepaths.add(jTabbedPane1.getSelectedIndex(), null);
+          readFonts();
+    }
+    void readFonts(){
+          Font font;
+        if(jToggleButtonBold.isSelected() && jToggleButton2.isSelected())
+        {
+            font=new Font(jComboBox.getSelectedItem().toString(),Font.BOLD+Font.ITALIC,Integer.parseInt(fontComboBox.getSelectedItem().toString()));
+        }
+ else if(jToggleButtonBold.isSelected())
+        {
+     font=new Font(jComboBox.getSelectedItem().toString(),Font.BOLD,Integer.parseInt(fontComboBox.getSelectedItem().toString()));
+
+ }
+ else if(jToggleButton2.isSelected())
+        {
+     font=new Font(jComboBox.getSelectedItem().toString(),Font.ITALIC,Integer.parseInt(fontComboBox.getSelectedItem().toString()));
+
+ }
+ else
+     font=new Font(jComboBox.getSelectedItem().toString(),Font.PLAIN,Integer.parseInt(fontComboBox.getSelectedItem().toString()));
+       Container c = (Container) jTabbedPane1.getSelectedComponent();
+        Container b = (Container) c.getComponent(0);
+        JTextArea texta = (JTextArea) b.getComponent(0);
+        texta.setFont(font);
+    }
+}
